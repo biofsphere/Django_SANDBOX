@@ -1,0 +1,1 @@
+Just a Django environment to play around. I have included a bunch of frequently used packages to test and play.  

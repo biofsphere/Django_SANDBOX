@@ -74,6 +74,14 @@ INSTALLED_APPS = [
     'apps.users',
 ]
 
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
+CRISPY_FAIL_SILENTLY = not DEBUG
+
+SITE_ID = 1
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -89,7 +97,11 @@ ROOT_URLCONF = 'sandbox.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ BASE_DIR /
+            'templates/allauth',
+            'templates/geolocation',
+            'templates/users',
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -97,6 +109,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'djversion.context_processors.version',
             ],
         },
     },
@@ -110,11 +123,26 @@ WSGI_APPLICATION = 'sandbox.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        'HOST': os.environ.get('DATABASE_HOST'),
+        'PORT': os.environ.get('DATABASE_PORT'),
     }
 }
 
+AUTH_USER_MODEL = 'users.User'
+
+AUTHENTICATION_BACKENDS = [
+
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -134,13 +162,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Allauth settings:
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_PRESERVE_USERNAME_CASING = False
+ACCOUNT_USERNAME_MIN_LENGTH = 5
+ACCOUNT_USERNAME_VALIDATORS = 'autenticacao.validators.custom_username_validators'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
@@ -150,9 +183,53 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
+
+STATIC_DIRS = [ BASE_DIR / 'static']
+STATIC_ROOT = [ BASE_DIR / 'static']
 STATIC_URL = 'static/'
+
+MEDIA_ROOT = [ BASE_DIR / 'media' ]
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Mapping configs
+VIRTUAL_ENV_BASE = os.environ.get(
+    'VIRTUAL_ENV')   # Accessing libraries at .venv
+
+GDAL_LIBRARY_PATH = VIRTUAL_ENV_BASE + r'\Lib\site-packages\osgeo\gdal304.dll'
+GEOS_LIBRARY_PATH = VIRTUAL_ENV_BASE + r'\Lib\site-packages\osgeo\geos_c.dll'
+PROJ_LIBRARY_PATH = VIRTUAL_ENV_BASE + r'\Lib\site-packages\osgeo\data\proj'
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (-0.023, 36.87),
+    'DEFAULT_ZOOM': 5,
+    'MAX_ZOOM': 20,
+    'MIN_ZOOM': 3,
+}
+
+# GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+# RECAPTCHA_KEY = os.environ.get('RECAPTCHA_KEY')
+# RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY')
+
+BASE_COUNTRY = "BR"
+
+USE_DJANGO_JQUERY = True # True means use Jquery from CDN (necessary for using smart_selects)
+
+# Versioning:
+repo = Repo('D:\HDD_Code\Django_SANDBOX')
+commit_count = len(list(repo.iter_commits()))
+
+DJVERSION_VERSION = f'v0.1.{commit_count}' # Aveilable as template context variable {{ VERSION}}
+DJVERSION_UPDATED = date
+DJVERSION_GIT_REPO_PATH = 'D:\HDD_Code\Django_SANDBOX'
+DJVERSION_GIT_USE_TAG = False
+DJVERSION_GIT_USE_COMMIT = False
+
